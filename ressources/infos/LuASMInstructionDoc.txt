@@ -1,0 +1,234 @@
+// Infos
+{value} can be written either : 0xFFFF or 65536 or 0b1111'1111'1111'1111 or 'c'
+
+RAM is the "miniRAM" array
+x|y|z|sPtr|flag means any register
+
+mode as dest :
+  0000 to 0011 dest is reg
+  0100 to 0111 dest is RAM[reg]
+  1000         dest is RAM[{value}]
+  1100 to 1111 ERROR but counted as RAM[{value}]
+
+mode as src :
+  0000 to 0011 src is reg
+  0100 to 0111 src is RAM[reg]
+  1000         src is RAM[{value}]
+  1100 to 1110 ERROR but counted as RAM[{value}]
+  1111 src is {value}
+
+mode as operand :
+  0000 to 0011 operand is reg
+  0100 operand is {value}
+  0101 to 1111 ERROR but counted as {value}
+
+mode as register :
+  0000 is reg_x
+  0001 is reg_y
+  0010 is reg_z
+  0011 is sPtr
+  0100 is flags
+  0101 to 1111 is ERROR but counted as reg_x
+
+modeLow is the 4 least significant bits of mode
+modeHigh is the 4 most significant bits of mode
+
+
+// opCodes
+NOP/WAIT : 0x01
+  space taken in codeRAM : 1
+  representation in codeRAM : opCode
+  description : does nothing for a cycle
+  args :
+
+WAIT src : 0x02
+  space taken in codeRAM : 2 to 3-4
+  representation in codeRAM : opCode mode {value}
+  description : does nothing for a specified number of cycles
+  args :
+    src : modeLow as src
+
+STR dest, src : 0x03
+  space taken in codeRAM : 2 to 4-6
+  representation in codeRAM : opCode mode {valueA} {valueB}
+  description : stores the value at/directly src in dest
+  args :
+    dest : modeHigh as dest
+    src  : modeLow as src
+
+STZ dest : 0x04
+  space taken in codeRAM : 2 to 3-4
+  representation in codeRAM : opCode mode {value}
+  description : stores the value 0(zero) in dest
+  args :
+    dest : modeLow as dest
+
+SCF {value} : 0x05
+  space taken in codeRAM : 2
+  representation in codeRAM : opCode {value}
+  description : set the mode flags to value
+  args :
+
+INC dest : 0x10  // Set the ZNO flag
+  space taken in codeRAM : 2 to 3-4
+  representation in codeRAM : opCode mode {value}
+  description : increments by 1(one) the value at dest
+  args :
+    dest : modeLow as dest
+
+DEC dest : 0x11  // Set the ZNO flag
+  space taken in codeRAM : 2 to 3-4
+  representation in codeRAM : opCode mode {value}
+  description : decrements by 1(one) the value at dest
+  args :
+    dest : modeLow as dest
+
+NOT  dest : 0x12  // Set Z flag
+  space taken in codeRAM : 2 to 3-4
+  representation in codeRAM : opCode mode {value}
+  description : invert every bit in dest
+  args :
+    dest : modeLow as dest
+
+AND  dest, opA, opB : 0x13  // Set Z flag
+NAND dest, opA, opB : 0x14  // Set Z flag
+OR   dest, opA, opB : 0x15  // Set Z flag
+NOR  dest, opA, opB : 0x16  // Set Z flag
+XOR  dest, opA, opB : 0x17  // Set Z flag
+XNOR dest, opA, opB : 0x18  // Set Z flag
+  space taken in codeRAM : 4 to 7-10
+  representation in codeRAM : opCode modeA modeB {valueA} {valueB} {valueC}
+  description : stores the result of the bitwise operation of opA and opB in dest
+  args :
+    dest : modeALow as dest
+    opA : modeBHigh as src
+    opB : modeBLow as src
+
+ADD dest, opA, opB : 0x19  // Set the ZNCO flag
+  space taken in codeRAM : 4 to 7-10
+  representation in codeRAM : opCode modeA modeB {valueA} {valueB} {valueC}
+  description : stores the result of the addition of opA and opB in dest
+  args :
+    dest : modeALow as dest
+    opA : modeBHigh as src
+    opB : modeBLow as src
+
+ADC dest, opA, opB : 0x1A  // Set the ZNCO flag
+  space taken in codeRAM : 4 to 7-10
+  representation in codeRAM : opCode modeA modeB {valueA} {valueB} {valueC}
+  description : stores the result of the addition of opA and opB and FLAG_Carry in dest
+  args :
+    dest : modeALow as dest
+    opA : modeBHigh as src
+    opB : modeBLow as src
+
+SUB dest, opA, opB : 0x1B  // Set the ZNCO flag
+  space taken in codeRAM : 4 to 7-10
+  representation in codeRAM : opCode modeA modeB {valueA} {valueB} {valueC}
+  description : stores the result of the subtraction of opA and opB in dest
+  args :
+    dest : modeALow as dest
+    opA : modeBHigh as src
+    opB : modeBLow as src
+
+SBC dest, opA, opB : 0x1C  // Set the ZNCO flag
+  space taken in codeRAM : 4 to 7-10
+  representation in codeRAM : opCode modeA modeB {valueA} {valueB} {valueC}
+  description : stores the result of the subtraction of opA and opB and !FLAG_Carry in dest
+  args :
+    dest : modeALow as dest
+    opA : modeBHigh as src
+    opB : modeBLow as src
+
+MUL dest, opA, opB : 0x1D  // Set the ZNCO flag
+  space taken in codeRAM : 4 to 7-10
+  representation in codeRAM : opCode modeA modeB {valueA} {valueB} {valueC}
+  description : stores the result of the product of opA and opB in dest
+  args :
+    dest : modeALow as dest
+    opA : modeBHigh as src
+    opB : modeBLow as src
+
+DIV dest, opA, opB : 0x1E  // Set the ZNCO flag
+  space taken in codeRAM : 4 to 7-10
+  representation in codeRAM : opCode modeA modeB {valueA} {valueB} {valueC}
+  description : stores the result of the division of opA and opB in dest
+  args :
+    dest : modeALow as dest
+    opA : modeBHigh as src
+    opB : modeBLow as src
+
+MOD dest, opA, opB : 0x1F  // Set the ZNCO flag
+  space taken in codeRAM : 4 to 7-10
+  representation in codeRAM : opCode modeA modeB {valueA} {valueB} {valueC}
+  description : stores the rest of the division of opA and opB in dest
+  args :
+    dest : modeALow as dest
+    opA : modeBHigh as src
+    opB : modeBLow as src
+
+CMP opA, opB : 0x20 // Set ZNCO flag
+  space taken in codeRAM : 3 to 5-7
+  representation in codeRAM : opCode mode {valueA} {valueB}
+  description : compares opA with opB and sets the state flags
+  args :
+    opA : modeHigh as src
+    opB : modeLow as src
+
+BR/JMP/GOTO abs : 0x21
+  space taken in codeRAM : 3
+  representation in codeRAM : opCode absValue
+  description : branches to an absolute address
+  args :
+    abs : an address, most likely a label, but can be a {value}
+
+BR/JMP/GOTO rel : 0x22
+  space taken in codeRAM : 2
+  representation in codeRAM : opCode relValue
+  description : branches to a relative address
+  args :
+    rel : an address, most likely a label, but can be a {value}
+
+BR/JMP/GOTO e|ne|lt|lte|gt  |gte|??|??? abs : 0x23
+            z nz c  cz  ncnz ncz nc cnz
+  space taken in codeRAM : 4
+  representation in codeRAM : opCode mode absValue
+  description : branches to an absolute address is the specified condition is true
+  args :
+    abs : an address, most likely a label, but can be a {value}
+
+BR/JMP/GOTO e|ne|lt|lte|gt  |gte|??|??? rel : 0x24
+            z nz c  cz  ncnz ncz nc cnz
+  space taken in codeRAM : 3
+  representation in codeRAM : opCode mode relValue
+  description : branches to a relative address is the specified condition is true
+  args :
+    rel : an address, most likely a label, but can be a {value}
+
+CALL abs : 0x25
+  space taken in codeRAM : 3
+  representation in codeRAM : opCode absValue
+  description : pushes the current address to the stack and branches to an absolute address
+  args :
+    abs : an address, most likely a label, but can be a {value}
+
+RET/RETURN : 0x26
+  space taken in codeRAM : 1
+  representation in codeRAM : opCode
+  description : branches to the address stored at the top of the stack and pops it off the stack
+  args :
+
+PUSH src : 0x27
+  space taken in codeRAM : 2
+  representation in codeRAM : opCode mode
+  description : pushes the entire(2(two) bytes) content of a register on top of the stack
+  args :
+    src : mode as register
+
+
+POP dest : 0x28
+  space taken in codeRAM : 2
+  representation in codeRAM : opCode mode
+  description : set the specified register to the value of the last two bytes the top of the stack then pops them off the stack
+  args :
+    dest : mode as register

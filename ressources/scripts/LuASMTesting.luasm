@@ -1,0 +1,10 @@
+str x, 10'000
+nop
+str x, 0b1111'1111'1111'1111
+nop
+str x, 0xFF'FF
+nop
+str x,'\n'
+nop
+stz x
+nop

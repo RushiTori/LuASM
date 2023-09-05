@@ -1,0 +1,38 @@
+.define
+
+.ifndef
+.ifdef
+.else
+.endif
+.undef
+
+.incbin filePath
+
+.include filePath
+
+.macro macroName(macroArgs)
+
+// macroArgName
+// %n
+
+.endmacro
+
+.repeat numIter
+
+// %i
+
+.endrepeat
+
+.org addr // not sure
+
+.section sectionName {sectionAddr}
+
+.push_section/pushs sectionName {sectionAddr}
+
+.pop_section/pops sectionName {sectionAddr}
+
+.res/reserve
+.db {value} // 0xFF OR "str"
+.dw {value} // 0xFFFF
+.dd {value} // 0xFFFF'FFFF
+.dq {value} // 0xFFFF'FFFF'FFFF'FFFF

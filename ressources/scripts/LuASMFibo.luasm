@@ -1,0 +1,12 @@
+main:
+  STR x, 1
+  STR y, 1
+
+fibo:
+  STR z, x
+  ADD x, x, y
+  BRc end
+  STR y, z
+  BR fibo
+
+end:
