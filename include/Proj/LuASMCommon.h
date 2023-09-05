@@ -23,8 +23,13 @@ extern bool systemEndianness;
 bool checkSystemEndianness();
 void resetLuASM();
 
+void setStateFlags(bool isFromSubDec, int result);
 bool isFlagSet(ushort flag);
 void setFlag(ushort flag, bool val);
+
+int getCPUMaxUValue();
+int getCPUMaxSValue();
+int getCPUMinSValue();
 
 ushort readMiniRAM(ushort addr);
 ushort readCodeRAM(bool readOneByte);

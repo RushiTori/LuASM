@@ -1,6 +1,25 @@
 #include "LuASMInstructions.h"
 
-void NOP() { return; }
+void NOP() {
+	printf("Registers :\n");
+	printf("\tX      : %d\n", reg_x);
+	printf("\tY      : %d\n", reg_y);
+	printf("\tZ      : %d\n", reg_z);
+	printf("\tsPtr   : %d\n", stackPtr);
+	printf("\t[sPtr] : %d\n", readMiniRAM(stackPtr));
+	printf("\tpc     : %d\n", codePtr - 1);
+
+	printf("State Flags :\n");
+	printf("\tZero           : %1d\n", isFlagSet(FLAG_Zero));
+	printf("\tCarry          : %1d\n", isFlagSet(FLAG_Carry));
+	printf("\tNegative       : %1d\n", isFlagSet(FLAG_Negative));
+	printf("\tOverflow       : %1d\n", isFlagSet(FLAG_Overflow));
+
+	printf("Control Flags :\n");
+	printf("\t8BitsMode      : %1d\n", isFlagSet(FLAG_8BitsMode));
+	printf("\tEndianMode     : %1d\n", isFlagSet(FLAG_EndianMode));
+	printf("\tFrameClockMode : %1d\n", isFlagSet(FLAG_FrameClockMode));
+}
 
 void WAIT() {
 	uchar mode = readCodeRAM(true);
@@ -26,45 +45,39 @@ void STZ() {
 
 void SCF() {
 	uchar controlFlags = readCodeRAM(true);
-	((uchar*)&flags)[!systemEndianness] = controlFlags;
+	flags = (flags & 0xFF00) | controlFlags;
 }
 
 void INC() {
-	// WIP
 	uchar mode = readCodeRAM(true);
 	void* dest = modeAsDest(mode);
-	ushort prevValue, newValue;
 
+	int result;
 	if (isFlagSet(FLAG_8BitsMode)) {
-		prevValue = (*((uchar*)dest));
 		(*((uchar*)dest))++;
-		newValue = (*((uchar*)dest));
+		result = *((char*)dest);
 	} else {
-		prevValue = (*((ushort*)dest));
 		(*((ushort*)dest))++;
-		newValue = (*((ushort*)dest));
+		result = *((short*)dest);
 	}
 
-	setFlag(FLAG_Overflow | FLAG_Carry | FLAG_Zero | FLAG_Negative, newValue < prevValue);
+	setStateFlags(false, result);
 }
 
 void DEC() {
-	// WIP
 	uchar mode = readCodeRAM(true);
 	void* dest = modeAsDest(mode);
-	ushort prevValue, newValue;
 
+	int result;
 	if (isFlagSet(FLAG_8BitsMode)) {
-		prevValue = (*((uchar*)dest));
 		(*((uchar*)dest))--;
-		newValue = (*((uchar*)dest));
+		result = *((char*)dest);
 	} else {
-		prevValue = (*((ushort*)dest));
 		(*((ushort*)dest))--;
-		newValue = (*((ushort*)dest));
+		result = *((short*)dest);
 	}
 
-	setFlag(FLAG_Overflow | FLAG_Carry | FLAG_Zero | FLAG_Carry, newValue > prevValue);
+	setStateFlags(true, result);
 }
 
 void AND() {
@@ -171,7 +184,6 @@ void NOT() {
 }
 
 void ADD() {
-	// WIP
 	uchar modeA = readCodeRAM(true);
 	uchar modeB = readCodeRAM(true);
 	uchar modeBHigh = extractModeHigh(modeB);
@@ -180,19 +192,14 @@ void ADD() {
 	void* dest = modeAsDest(modeA);
 	ushort opA = modeAsSrc(modeBHigh);
 	ushort opB = modeAsSrc(modeBLow);
-	uint result = opA + opB;
-	//if(result > (isFlagSet(FLAG_8BitsMode) ? UINT8_MAX : UINT16_MAX)) printf("%d\n", result);
+	int result = opA + opB;
 
 	writeBytes(dest, result & UINT16_MAX);
 
-	setFlag(FLAG_Zero, result == 0);
-	setFlag(FLAG_Carry | FLAG_Overflow, result > (isFlagSet(FLAG_8BitsMode) ? UINT8_MAX : UINT16_MAX));
-	//if(result > (isFlagSet(FLAG_8BitsMode) ? UINT8_MAX : UINT16_MAX)) printf("%d\n", isFlagSet(FLAG_Carry));
-	
+	setStateFlags(false, result);
 }
 
 void ADC() {
-	// WIP
 	uchar modeA = readCodeRAM(true);
 	uchar modeB = readCodeRAM(true);
 	uchar modeBHigh = extractModeHigh(modeB);
@@ -201,16 +208,14 @@ void ADC() {
 	void* dest = modeAsDest(modeA);
 	ushort opA = modeAsSrc(modeBHigh);
 	ushort opB = modeAsSrc(modeBLow);
-	uint result = opA + opB + isFlagSet(FLAG_Carry);
+	int result = opA + opB + isFlagSet(FLAG_Carry);
 
 	writeBytes(dest, result & UINT16_MAX);
 
-	setFlag(FLAG_Zero, result == 0);
-	setFlag(FLAG_Carry | FLAG_Overflow, result > UINT16_MAX);
+	setStateFlags(false, result);
 }
 
 void SUB() {
-	// WIP
 	uchar modeA = readCodeRAM(true);
 	uchar modeB = readCodeRAM(true);
 	uchar modeBHigh = extractModeHigh(modeB);
@@ -219,16 +224,14 @@ void SUB() {
 	void* dest = modeAsDest(modeA);
 	ushort opA = modeAsSrc(modeBHigh);
 	ushort opB = modeAsSrc(modeBLow);
-	ushort result = opA - opB;
+	int result = opA - opB;
 
 	writeBytes(dest, result);
 
-	setFlag(FLAG_Zero, result == 0);
-	setFlag(FLAG_Carry | FLAG_Overflow, opB > opA);
+	setStateFlags(true, result);
 }
 
 void SBC() {
-	// WIP
 	uchar modeA = readCodeRAM(true);
 	uchar modeB = readCodeRAM(true);
 	uchar modeBHigh = extractModeHigh(modeB);
@@ -237,16 +240,14 @@ void SBC() {
 	void* dest = modeAsDest(modeA);
 	ushort opA = modeAsSrc(modeBHigh);
 	ushort opB = modeAsSrc(modeBLow);
-	ushort result = opA - opB - isFlagSet(FLAG_Carry);
+	int result = opA - opB - isFlagSet(FLAG_Carry);
 
 	writeBytes(dest, result);
 
-	setFlag(FLAG_Zero, result == 0);
-	setFlag(FLAG_Carry | FLAG_Overflow, opB > opA);
+	setStateFlags(true, result);
 }
 
 void MUL() {
-	// WIP
 	uchar modeA = readCodeRAM(true);
 	uchar modeB = readCodeRAM(true);
 	uchar modeBHigh = extractModeHigh(modeB);
@@ -255,17 +256,15 @@ void MUL() {
 	void* dest = modeAsDest(modeA);
 	ushort opA = modeAsSrc(modeBHigh);
 	ushort opB = modeAsSrc(modeBLow);
-	uint result = opA * opB;
+	int result = opA * opB;
 
 	writeBytes(dest, result & UINT16_MAX);
-	writeBytes(miniRAM, result >> 16);
+	writeBytes(miniRAM, (result & 0xFFFF0000) / 0x00010000);
 
-	setFlag(FLAG_Zero, result == 0);
-	setFlag(FLAG_Carry | FLAG_Overflow, result > UINT16_MAX);
+	setStateFlags(false, result);
 }
 
 void DIV() {
-	// WIP
 	uchar modeA = readCodeRAM(true);
 	uchar modeB = readCodeRAM(true);
 	uchar modeBHigh = extractModeHigh(modeB);
@@ -282,7 +281,6 @@ void DIV() {
 }
 
 void MOD() {
-	// WIP
 	uchar modeA = readCodeRAM(true);
 	uchar modeB = readCodeRAM(true);
 	uchar modeBHigh = extractModeHigh(modeB);
@@ -299,36 +297,28 @@ void MOD() {
 }
 
 void CMP() {
-	// WIP
 	uchar mode = readCodeRAM(true);
 	uchar modeHigh = extractModeHigh(mode);
 	uchar modeLow = extractModeLow(mode);
 
-	ushort srcA = modeAsSrc(modeHigh);
-	ushort srcB = modeAsSrc(modeHigh);
+	ushort opA = modeAsSrc(modeHigh);
+	ushort opB = modeAsSrc(modeHigh);
+	int result = opA - opB;
 
-	setFlag(FLAG_Zero, srcA == srcB);
-	setFlag(FLAG_Carry | FLAG_Overflow, srcB > srcA);
+	setStateFlags(true, result);
 }
 
 void JMPA() {
-	bool byteMode = isFlagSet(FLAG_8BitsMode);
-	setFlag(FLAG_8BitsMode, false);
-
-	ushort jmpAddr = readCodeRAM(true);
+	ushort jmpAddr = readCodeRAM(false);
 	codePtr = jmpAddr;
-
-	setFlag(FLAG_8BitsMode, byteMode);
 }
 
 void JMPR() {
-	// WIP
 	char jmpAddr = readCodeRAM(true) & 0xFF;
 	codePtr += jmpAddr;
 }
 
 void JMPAC() {
-	// WIP
 	uchar mode = readCodeRAM(true);
 
 	ushort jmpAddr = readCodeRAM(false);
@@ -339,7 +329,6 @@ void JMPAC() {
 }
 
 void JMPRC() {
-	// WIP
 	uchar mode = readCodeRAM(true);
 	char jmpAddr = (uchar)readCodeRAM(true);
 

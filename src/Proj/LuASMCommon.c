@@ -37,7 +37,25 @@ bool checkSystemEndianness() {
 	return *((char*)&temp);
 }
 
-bool isFlagSet(ushort flag) { return !((flags & flag) ^ flag); }
+// Zero : if result of operation is zero
+// Carry : if result of operation is greater than UMAX
+// Overflow : if result of operation is greater than SMAX (when inc, add and mul) or less than SMIN (when dec and sub)
+// Negative : if the result is negative
+void setStateFlags(bool isFromSubDec, int result) {
+	setFlag(FLAG_Zero, result == 0);
+
+	setFlag(FLAG_Carry, result > getCPUMaxUValue());
+
+	if (isFromSubDec) {
+		setFlag(FLAG_Overflow, result < getCPUMinSValue());
+	} else {
+		setFlag(FLAG_Overflow, result > getCPUMaxSValue());
+	}
+
+	setFlag(FLAG_Negative, result < 0);
+}
+
+bool isFlagSet(ushort flag) { return (flags & flag); }
 
 void setFlag(ushort flag, bool val) {
 	if (val) {
@@ -46,6 +64,12 @@ void setFlag(ushort flag, bool val) {
 		flags ^= flags & flag;
 	}
 }
+
+int getCPUMaxUValue() { return ((isFlagSet(FLAG_8BitsMode)) ? UINT8_MAX : UINT16_MAX); }
+
+int getCPUMaxSValue() { return ((isFlagSet(FLAG_8BitsMode)) ? INT8_MAX : INT16_MAX); }
+
+int getCPUMinSValue() { return ((isFlagSet(FLAG_8BitsMode)) ? INT8_MIN : INT16_MIN); }
 
 ushort readMiniRAM(ushort addr) {
 	bool systemEndian = systemEndianness;
@@ -76,19 +100,6 @@ ushort readCodeRAM(bool readOneByte) {
 	return fetched;
 }
 
-/*
-ushort readCodeRAM(bool checkByteMode) {
-  ushort codeAddr = codePtr;
-  ushort codeVal = 0;
-  if (checkByteMode && !isFlagSet(FLAG_8BitsMode)) {
-	codeVal = *((ushort*)(codeRAM + codeAddr));
-	codePtr++;
-  }
-  codeVal = codeRAM[codeAddr];
-  codePtr++;
-  return codeVal;
-}
-*/
 void pushStack(ushort val, bool checkByteMode) {
 	bool byteMode = isFlagSet(FLAG_8BitsMode);
 
@@ -112,7 +123,6 @@ ushort popStack(bool checkByteMode) {
 
 	return stackValue;
 }
-
 
 void writeBytes(void* dest, ushort val) {
 	bool systemEndian = systemEndianness;
