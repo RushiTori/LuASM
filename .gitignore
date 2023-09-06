@@ -23,3 +23,6 @@
 # Folders
 .vscode/
 temp/
+
+# Logs
+leak_infos.txt
