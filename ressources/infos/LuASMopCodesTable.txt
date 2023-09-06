@@ -5,6 +5,13 @@
 0x04: STZ
 0x05: SCF
 
+0x06: LSL // not added yet
+0x07: LSR // not added yet
+0x08: ASL // not added yet
+0x09: ASR // not added yet
+0x0A: BSL // not added yet
+0x0B: BSR // not added yet
+
 0x10: INC
 0x11: DEC
 

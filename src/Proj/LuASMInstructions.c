@@ -1,24 +1,24 @@
 #include "LuASMInstructions.h"
 
 void NOP() {
-	printf("Registers :\n");
+	//printf("Registers :\n");
 	printf("\tX      : %d\n", reg_x);
-	printf("\tY      : %d\n", reg_y);
-	printf("\tZ      : %d\n", reg_z);
-	printf("\tsPtr   : %d\n", stackPtr);
-	printf("\t[sPtr] : %d\n", readMiniRAM(stackPtr));
-	printf("\tpc     : %d\n", codePtr - 1);
+	//printf("\tY      : %d\n", reg_y);
+	//printf("\tZ      : %d\n", reg_z);
+	//printf("\tsPtr   : %d\n", stackPtr);
+	//printf("\t[sPtr] : %d\n", readMiniRAM(stackPtr-2));
+	//printf("\tpc     : %d\n", codePtr - 1);
 
-	printf("State Flags :\n");
-	printf("\tZero           : %1d\n", isFlagSet(FLAG_Zero));
-	printf("\tCarry          : %1d\n", isFlagSet(FLAG_Carry));
-	printf("\tNegative       : %1d\n", isFlagSet(FLAG_Negative));
-	printf("\tOverflow       : %1d\n", isFlagSet(FLAG_Overflow));
+	//printf("State Flags :\n");
+	//printf("\tZero           : %1d\n", isFlagSet(FLAG_Zero));
+	//printf("\tCarry          : %1d\n", isFlagSet(FLAG_Carry));
+	//printf("\tNegative       : %1d\n", isFlagSet(FLAG_Negative));
+	//printf("\tOverflow       : %1d\n", isFlagSet(FLAG_Overflow));
 
-	printf("Control Flags :\n");
-	printf("\t8BitsMode      : %1d\n", isFlagSet(FLAG_8BitsMode));
-	printf("\tEndianMode     : %1d\n", isFlagSet(FLAG_EndianMode));
-	printf("\tFrameClockMode : %1d\n", isFlagSet(FLAG_FrameClockMode));
+	//printf("Control Flags :\n");
+	//printf("\t8BitsMode      : %1d\n", isFlagSet(FLAG_8BitsMode));
+	//printf("\tEndianMode     : %1d\n", isFlagSet(FLAG_EndianMode));
+	//printf("\tFrameClockMode : %1d\n", isFlagSet(FLAG_FrameClockMode));
 }
 
 void WAIT() {
@@ -46,6 +46,66 @@ void STZ() {
 void SCF() {
 	uchar controlFlags = readCodeRAM(true);
 	flags = (flags & 0xFF00) | controlFlags;
+}
+
+void LSL() {
+	// WIP
+	uchar mode = readCodeRAM(true);
+	uchar modeHigh = extractModeHigh(mode);
+	uchar modeLow = extractModeLow(mode);
+
+	void* dest = modeAsDest(modeHigh);
+	ushort srcValue = modeAsSrc(modeLow);
+}
+
+void LSR() {
+	// WIP
+	uchar mode = readCodeRAM(true);
+	uchar modeHigh = extractModeHigh(mode);
+	uchar modeLow = extractModeLow(mode);
+
+	void* dest = modeAsDest(modeHigh);
+	ushort srcValue = modeAsSrc(modeLow);
+}
+
+void ASL() {
+	// WIP
+	uchar mode = readCodeRAM(true);
+	uchar modeHigh = extractModeHigh(mode);
+	uchar modeLow = extractModeLow(mode);
+
+	void* dest = modeAsDest(modeHigh);
+	ushort srcValue = modeAsSrc(modeLow);
+}
+
+void ASR() {
+	// WIP
+	uchar mode = readCodeRAM(true);
+	uchar modeHigh = extractModeHigh(mode);
+	uchar modeLow = extractModeLow(mode);
+
+	void* dest = modeAsDest(modeHigh);
+	ushort srcValue = modeAsSrc(modeLow);
+}
+
+void BSL() {
+	// WIP
+	uchar mode = readCodeRAM(true);
+	uchar modeHigh = extractModeHigh(mode);
+	uchar modeLow = extractModeLow(mode);
+
+	void* dest = modeAsDest(modeHigh);
+	ushort srcValue = modeAsSrc(modeLow);
+}
+
+void BSR() {
+	// WIP
+	uchar mode = readCodeRAM(true);
+	uchar modeHigh = extractModeHigh(mode);
+	uchar modeLow = extractModeLow(mode);
+
+	void* dest = modeAsDest(modeHigh);
+	ushort srcValue = modeAsSrc(modeLow);
 }
 
 void INC() {
@@ -302,7 +362,7 @@ void CMP() {
 	uchar modeLow = extractModeLow(mode);
 
 	ushort opA = modeAsSrc(modeHigh);
-	ushort opB = modeAsSrc(modeHigh);
+	ushort opB = modeAsSrc(modeLow);
 	int result = opA - opB;
 
 	setStateFlags(true, result);
@@ -348,12 +408,12 @@ void RET() { codePtr = popStack(false); }
 
 void PUSH() {
 	uchar mode = readCodeRAM(true);
-	ushort* regSrc = modeAsReg(mode);
-	pushStack(*regSrc, false);
+	ushort srcValue = modeAsSrc(mode);
+	pushStack(srcValue, false);
 }
 
 void POP() {
 	uchar mode = readCodeRAM(true);
-	ushort* regDest = modeAsReg(mode);
-	*regDest = popStack(false);
+	void* dest = modeAsDest(mode);
+	writeBytes(dest, popStack(false));
 }

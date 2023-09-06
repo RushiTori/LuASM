@@ -10,6 +10,13 @@ void STR();
 void STZ();
 void SCF();
 
+void LSL();
+void LSR();
+void ASL();
+void ASR();
+void BSL();
+void BSR();
+
 void INC();
 void DEC();
 

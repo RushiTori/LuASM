@@ -34,6 +34,18 @@ void initOpCodeInfos() {
 	{
 		info.opCode = OP_STR;
 		hm_Push(&opCodeInfos, "STR", &info);
+		info.opCode = OP_LSL;
+		hm_Push(&opCodeInfos, "LSL", &info);
+		info.opCode = OP_LSR;
+		hm_Push(&opCodeInfos, "LSR", &info);
+		info.opCode = OP_ASL;
+		hm_Push(&opCodeInfos, "ASL", &info);
+		info.opCode = OP_ASR;
+		hm_Push(&opCodeInfos, "ASR", &info);
+		info.opCode = OP_BSL;
+		hm_Push(&opCodeInfos, "BSL", &info);
+		info.opCode = OP_BSR;
+		hm_Push(&opCodeInfos, "BSR", &info);
 	}
 
 	info.treatment = ONEBYTE_VALUE;
@@ -288,14 +300,15 @@ string* CutInstLineParts(const string lineStr, uint lineNum) {
 		}
 
 		uint subStrLen = j - i;
-		// printf("took a cut at %d of length %d\n", i, subStrLen);
 
 		subStrings = realloc(subStrings, (subCount + 1) * sizeof(string));
 		subStrings[subCount - 1] = calloc(subStrLen + 1, sizeof(char));
 		memcpy(subStrings[subCount - 1], lineStr + i, subStrLen);
+		//("took a cut at %d of length %d : \"%s\"\n", i, subStrLen, subStrings[subCount - 1]);
+
 		subStrings[subCount++] = NULL;
 
-		i = j;
+		i = j - 1;
 	}
 
 	return subStrings;
@@ -351,8 +364,7 @@ bool ParseArgValue(InstLine* instLine, const string arg, uint lineNum, uint argN
 		uint charModeEnd = str_LastIndexOf(arg, '\'');
 
 		if (argLen != (3 + (arg[1] == '\\'))) {
-
-		//if (charModeEnd - (charModeStart + 1) != (2 + arg[1] == '\\')) {
+			// if (charModeEnd - (charModeStart + 1) != (2 + arg[1] == '\\')) {
 			printf("Parsing Error at line %d arg %d : ", lineNum, argNum);
 			printf("multi-character expression aren't supported, if you meant a string please use \"\n");
 			return false;
@@ -433,8 +445,9 @@ bool ParseInstArg(InstLine* instLine, const string arg, uint lineNum, uint argNu
 	if (str_InsensitiveEqualsRange(arg, "ram", 3) || (arg[0] == '[')) {
 		uint indexingStart = str_IndexOf(arg, '[');
 		uint indexingEnd = str_LastIndexOf(arg, ']');
-		if ((indexingStart == 0 || indexingStart == 3) && (indexingStart == (argLen - 1))) {
+		if ((indexingStart == 0 || indexingStart == 3) && (indexingEnd == (argLen - 1))) {
 			bool done = false;
+			indexingStart++;
 			while (!done) {
 				done = true;
 				if (str_IsSpace(arg[indexingStart])) {
@@ -447,7 +460,7 @@ bool ParseInstArg(InstLine* instLine, const string arg, uint lineNum, uint argNu
 					done = false;
 				}
 			}
-			indexingEnd++;
+			indexingEnd;
 
 			uint indexingLen = indexingEnd - indexingStart;
 			char indexPart[indexingLen + 1];
@@ -459,7 +472,7 @@ bool ParseInstArg(InstLine* instLine, const string arg, uint lineNum, uint argNu
 				// Needs to switch to a tokenised version asap
 				return false;
 			}
-			instLine->argValues[instLine->valuesCount - 1] |= MODE_RAM_REG_X;
+			instLine->modes[instLine->modeCount - 1] |= MODE_RAM_REG_X;
 			return true;
 		}
 	}
@@ -478,6 +491,7 @@ void CleanInstParts(string** parts) {
 InstLine ConstructInstLine(const string lineStr, uint lineNum) {
 	InstLine instLine = GetEmptyInstLine();
 
+	// printf("\n");
 	string* parts = CutInstLineParts(lineStr, lineNum);
 
 	uint partCount = 0;
@@ -586,6 +600,8 @@ InstLine ConstructInstLine(const string lineStr, uint lineNum) {
 				instLine.opCode = OP_JMPAC;
 			}
 		}
+	} else if (info.treatment == ONEBYTE_VALUE) {
+		instLine.modeCount = 0;
 	}
 
 	CleanInstParts(&parts);
@@ -595,48 +611,37 @@ InstLine ConstructInstLine(const string lineStr, uint lineNum) {
 void assembleParser(const string path) {
 	// WIP
 	string* lines = io_LoadStrings(path);
-	Array instLines = arr_Create(sizeof(InstLine), 256, false, false);
 
 	bool failedParsing = false;
 	for (uint i = 0; lines[i]; i++) {
 		InstLine instLine = ConstructInstLine(lines[i], i);
-		//printf("parsed opCode #%d at line %d\n", instLine.opCode, i);
 		if (instLine.opCode == OP_BADOP) {
 			failedParsing = true;
 			break;
 		}
-		arr_Push(&instLines, &instLine, 1);
-	}
 
-	/*
-	Do label magic here
-	*/
+		codeRAM[codePtr++] = instLine.opCode;
 
-	for (uint i = 0; i < instLines.elementCount; i++) {
-		InstLine* temp = ((InstLine*)instLines.data) + i;
-
-		codeRAM[codePtr++] = temp->opCode;
-
-		if (temp->modeCount == 1) {
-			codeRAM[codePtr++] = temp->modes[0];
-		} else if (temp->modeCount == 2) {
-			codeRAM[codePtr++] = combineModeLowHigh(temp->modes[1], temp->modes[0]);
-		} else if (temp->modeCount == 3) {
-			codeRAM[codePtr++] = combineModeLowHigh(temp->modes[1], temp->modes[0]);
-			codeRAM[codePtr++] = temp->modes[2];
+		if (instLine.modeCount == 1) {
+			codeRAM[codePtr++] = instLine.modes[0];
+		} else if (instLine.modeCount == 2) {
+			codeRAM[codePtr++] = combineModeLowHigh(instLine.modes[1], instLine.modes[0]);
+		} else if (instLine.modeCount == 3) {
+			codeRAM[codePtr++] = combineModeLowHigh(instLine.modes[1], instLine.modes[0]);
+			codeRAM[codePtr++] = instLine.modes[2];
 		}
 
-		for (uint j = 0; j < temp->valuesCount; j++) {
-			if (temp->oneByteValues) {
-				codeRAM[codePtr++] = temp->argValues[j];
+		for (uint j = 0; j < instLine.valuesCount; j++) {
+			if (instLine.oneByteValues) {
+				codeRAM[codePtr++] = instLine.argValues[j];
 			} else {
-				*(ushort*)(codeRAM + codePtr) = temp->argValues[j];
+				*(ushort*)(codeRAM + codePtr) = instLine.argValues[j];
 				codePtr += 2;
 			}
 		}
 	}
 
-	codePtr = 0;
+	printf("%s compiled to a %d bytes program\n", path, codePtr);
 
-	arr_Clear(&instLines, false);
+	codePtr = 0;
 }

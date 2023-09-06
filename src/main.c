@@ -40,8 +40,6 @@ int main(int argc, string* argv) {
 
 	resetLuASM();
 
-	//initArgTreatments();
-	//assemble("ressources/scripts/LuASMTesting.luasm");
 
 	initOpCodeInfos();
 	assembleParser("ressources/scripts/LuASMTesting.luasm");
@@ -51,7 +49,7 @@ int main(int argc, string* argv) {
 		uchar opCode = readCodeRAM(true);
 		// printf("%d : %d\n", codePtr - 1, opCode);
 		if (opCode == OP_NOP) {
-			printf("%d\n", reg_x);
+			//printf("%d\n", reg_x);
 		}
 
 		switch (opCode) {
@@ -152,7 +150,6 @@ int main(int argc, string* argv) {
 				break;
 		}
 
-		// printLuASMStates(stdout);
 	}
 
 	printf("\nProgram closed successfully !\n");

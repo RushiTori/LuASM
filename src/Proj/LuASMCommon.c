@@ -71,6 +71,18 @@ int getCPUMaxSValue() { return ((isFlagSet(FLAG_8BitsMode)) ? INT8_MAX : INT16_M
 
 int getCPUMinSValue() { return ((isFlagSet(FLAG_8BitsMode)) ? INT8_MIN : INT16_MIN); }
 
+ushort swapEndian(ushort baseValue) {
+	uchar* baseBytes = (uchar*)&baseValue;
+
+	ushort tempValue = 0;
+
+	uchar* tempBytes = (uchar*)&tempValue;
+	tempBytes[1] = baseBytes[0];
+	tempBytes[0] = baseBytes[1];
+
+	return tempValue;
+}
+
 ushort readMiniRAM(ushort addr) {
 	bool systemEndian = systemEndianness;
 	bool endianMode = isFlagSet(FLAG_EndianMode);
@@ -79,11 +91,9 @@ ushort readMiniRAM(ushort addr) {
 	if (byteMode) {
 		fetched = miniRAM[addr];
 	} else {
-		if (endianMode == systemEndian) {
-			fetched = *((ushort*)(miniRAM + addr));
-		} else {
-			((char*)&fetched)[0] = miniRAM[addr + 1];
-			((char*)&fetched)[1] = miniRAM[addr];
+		fetched = *((ushort*)(miniRAM + addr));
+		if (endianMode != systemEndian) {
+			fetched = swapEndian(fetched);
 		}
 	}
 
@@ -124,20 +134,20 @@ ushort popStack(bool checkByteMode) {
 	return stackValue;
 }
 
+bool isReg(void* addr) { return (addr == &reg_x) || (addr == &reg_y) || (addr == &reg_z) || (addr == &stackPtr); }
+
 void writeBytes(void* dest, ushort val) {
-	bool systemEndian = systemEndianness;
 	bool endianMode = isFlagSet(FLAG_EndianMode);
 	bool byteMode = isFlagSet(FLAG_8BitsMode);
+
+	if ((endianMode != systemEndianness) && !isReg(dest)) {
+		val = swapEndian(val);
+	}
 
 	if (byteMode) {
 		*((uchar*)dest) = val & 0xFF;
 	} else {
-		if (endianMode == systemEndian) {
-			*((ushort*)dest) = val;
-		} else {
-			((uchar*)dest)[1] = val & 0x00FF;
-			((uchar*)dest)[0] = (val & 0xFF00) / 0x0100;
-		}
+		*((ushort*)dest) = val;
 	}
 }
 
@@ -221,59 +231,6 @@ ushort modeAsSrc(uchar mode) {
 
 	return srcValue;
 }
-
-/*ushort modeAsSrc(uchar mode, void** srcAddr) {
-	ushort srcValue = 0;
-
-	if (mode == 0b1111) {
-		srcValue = readCodeRAM(true);
-		if (srcAddr) *srcAddr = NULL;
-	} else if (mode & 0b1000) {
-		ushort tempAddr = readCodeRAM(true);
-		srcValue = readMiniRAM(tempAddr);
-		if (srcAddr) *srcAddr = miniRAM + tempAddr;
-	} else if (mode & 0b0100) {
-		switch (mode & 0b0011) {
-			case 0b00:
-				srcValue = readMiniRAM(reg_x);
-				if (srcAddr) *srcAddr = miniRAM + reg_x;
-				break;
-			case 0b01:
-				srcValue = readMiniRAM(reg_y);
-				if (srcAddr) *srcAddr = miniRAM + reg_y;
-				break;
-			case 0b10:
-				srcValue = readMiniRAM(reg_z);
-				if (srcAddr) *srcAddr = miniRAM + reg_z;
-				break;
-			case 0b11:
-				srcValue = readMiniRAM(stackPtr);
-				if (srcAddr) *srcAddr = miniRAM + stackPtr;
-				break;
-		}
-	} else {
-		switch (mode & 0b0011) {
-			case 0b00:
-				srcValue = reg_x;
-				if (srcAddr) *srcAddr = &reg_x;
-				break;
-			case 0b01:
-				srcValue = reg_y;
-				if (srcAddr) *srcAddr = &reg_y;
-				break;
-			case 0b10:
-				srcValue = reg_z;
-				if (srcAddr) *srcAddr = &reg_z;
-				break;
-			case 0b11:
-				srcValue = stackPtr;
-				if (srcAddr) *srcAddr = &stackPtr;
-				break;
-		}
-	}
-
-	return srcValue;
-}*/
 
 ushort* modeAsReg(uchar mode) {
 	switch (mode) {
