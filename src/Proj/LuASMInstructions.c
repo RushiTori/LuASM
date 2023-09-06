@@ -1,24 +1,24 @@
 #include "LuASMInstructions.h"
 
 void NOP() {
-	//printf("Registers :\n");
+	// printf("Registers :\n");
 	printf("\tX      : %d\n", reg_x);
-	//printf("\tY      : %d\n", reg_y);
-	//printf("\tZ      : %d\n", reg_z);
-	//printf("\tsPtr   : %d\n", stackPtr);
-	//printf("\t[sPtr] : %d\n", readMiniRAM(stackPtr-2));
-	//printf("\tpc     : %d\n", codePtr - 1);
+	// printf("\tY      : %d\n", reg_y);
+	// printf("\tZ      : %d\n", reg_z);
+	// printf("\tsPtr   : %d\n", stackPtr);
+	// printf("\t[sPtr] : %d\n", readMiniRAM(stackPtr-2));
+	// printf("\tpc     : %d\n", codePtr - 1);
 
-	//printf("State Flags :\n");
-	//printf("\tZero           : %1d\n", isFlagSet(FLAG_Zero));
-	//printf("\tCarry          : %1d\n", isFlagSet(FLAG_Carry));
-	//printf("\tNegative       : %1d\n", isFlagSet(FLAG_Negative));
-	//printf("\tOverflow       : %1d\n", isFlagSet(FLAG_Overflow));
+	// printf("State Flags :\n");
+	// printf("\tZero           : %1d\n", isFlagSet(FLAG_Zero));
+	// printf("\tCarry          : %1d\n", isFlagSet(FLAG_Carry));
+	// printf("\tNegative       : %1d\n", isFlagSet(FLAG_Negative));
+	// printf("\tOverflow       : %1d\n", isFlagSet(FLAG_Overflow));
 
-	//printf("Control Flags :\n");
-	//printf("\t8BitsMode      : %1d\n", isFlagSet(FLAG_8BitsMode));
-	//printf("\tEndianMode     : %1d\n", isFlagSet(FLAG_EndianMode));
-	//printf("\tFrameClockMode : %1d\n", isFlagSet(FLAG_FrameClockMode));
+	// printf("Control Flags :\n");
+	// printf("\t8BitsMode      : %1d\n", isFlagSet(FLAG_8BitsMode));
+	// printf("\tEndianMode     : %1d\n", isFlagSet(FLAG_EndianMode));
+	// printf("\tFrameClockMode : %1d\n", isFlagSet(FLAG_FrameClockMode));
 }
 
 void WAIT() {
@@ -380,21 +380,14 @@ void JMPR() {
 
 void JMPAC() {
 	uchar mode = readCodeRAM(true);
-
 	ushort jmpAddr = readCodeRAM(false);
-
-	if (evalCond(mode & JMP_NotC, mode & JMP_CheckC, mode & JMP_NotZ, mode & JMP_CheckZ)) {
-		codePtr = jmpAddr;
-	}
+	if (evalCond(mode)) codePtr = jmpAddr;
 }
 
 void JMPRC() {
 	uchar mode = readCodeRAM(true);
 	char jmpAddr = (uchar)readCodeRAM(true);
-
-	if (evalCond(mode & JMP_NotC, mode & JMP_CheckC, mode & JMP_NotZ, mode & JMP_CheckZ)) {
-		codePtr += jmpAddr;
-	}
+	if (evalCond(mode)) codePtr += jmpAddr;
 }
 
 void CALL() {

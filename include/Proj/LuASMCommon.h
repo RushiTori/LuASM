@@ -41,6 +41,6 @@ void writeBytes(void* dest, ushort val);
 
 void* modeAsDest(uchar mode);
 ushort modeAsSrc(uchar mode);
-ushort* modeAsReg(uchar mode);
+bool evalCond(uchar cond);
 
 #endif  // LU_ASM_COMMON

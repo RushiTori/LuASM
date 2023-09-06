@@ -3,7 +3,7 @@
 typedef struct OpCodeInfo {
 	OpCode opCode;
 	InstArgTreament treatment;
-	ConditionType condType;
+	InstCond cond;
 } OpCodeInfo;
 
 static HashMap opCodeInfos;
@@ -12,7 +12,7 @@ void initOpCodeInfos() {
 	opCodeInfos = hm_Create(sizeof(OpCodeInfo), false);
 
 	OpCodeInfo info;
-	info.condType = COND_None;
+	info.cond = COND_Always;
 
 	info.treatment = NO_ARGS;
 	{
@@ -105,120 +105,169 @@ void initOpCodeInfos() {
 	info.treatment = ADDR_ABS_REL;
 	{
 		info.opCode = OP_BADOP;
-		hm_Push(&opCodeInfos, "BR", &info);
-		info.opCode = OP_BADOP;
-		hm_Push(&opCodeInfos, "JMP", &info);
-		info.opCode = OP_BADOP;
-		hm_Push(&opCodeInfos, "GOTO", &info);
+		info.cond = COND_Always;
+		{
+			hm_Push(&opCodeInfos, "BR", &info);
+			hm_Push(&opCodeInfos, "JMP", &info);
+			hm_Push(&opCodeInfos, "GOTO", &info);
+		}
 
-		info.condType = COND_Zero;
-		info.opCode = OP_BADOP;
-		hm_Push(&opCodeInfos, "BRZ", &info);
-		info.opCode = OP_BADOP;
-		hm_Push(&opCodeInfos, "JMPZ", &info);
-		info.opCode = OP_BADOP;
-		hm_Push(&opCodeInfos, "GOTOZ", &info);
+		info.cond = COND_Equal;
+		{
+			hm_Push(&opCodeInfos, "BRE", &info);
+			hm_Push(&opCodeInfos, "JMPE", &info);
+			hm_Push(&opCodeInfos, "GOTOE", &info);
 
-		info.opCode = OP_BADOP;
-		hm_Push(&opCodeInfos, "BRE", &info);
-		info.opCode = OP_BADOP;
-		hm_Push(&opCodeInfos, "JMPE", &info);
-		info.opCode = OP_BADOP;
-		hm_Push(&opCodeInfos, "GOTOE", &info);
+			hm_Push(&opCodeInfos, "BREQ", &info);
+			hm_Push(&opCodeInfos, "JMPEQ", &info);
+			hm_Push(&opCodeInfos, "GOTOEQ", &info);
 
-		info.condType = COND_NotZero;
-		info.opCode = OP_BADOP;
-		hm_Push(&opCodeInfos, "BRNZ", &info);
-		info.opCode = OP_BADOP;
-		hm_Push(&opCodeInfos, "JMPNZ", &info);
-		info.opCode = OP_BADOP;
-		hm_Push(&opCodeInfos, "GOTONZ", &info);
+			hm_Push(&opCodeInfos, "BRZS", &info);
+			hm_Push(&opCodeInfos, "JMPZS", &info);
+			hm_Push(&opCodeInfos, "GOTOZS", &info);
+		}
 
-		info.opCode = OP_BADOP;
-		hm_Push(&opCodeInfos, "BRNE", &info);
-		info.opCode = OP_BADOP;
-		hm_Push(&opCodeInfos, "JMPNE", &info);
-		info.opCode = OP_BADOP;
-		hm_Push(&opCodeInfos, "GOTONE", &info);
+		info.cond = COND_NotEqual;
+		{
+			hm_Push(&opCodeInfos, "BRNE", &info);
+			hm_Push(&opCodeInfos, "JMPNE", &info);
+			hm_Push(&opCodeInfos, "GOTONE", &info);
 
-		info.condType = COND_Carry;
-		info.opCode = OP_BADOP;
-		hm_Push(&opCodeInfos, "BRC", &info);
-		info.opCode = OP_BADOP;
-		hm_Push(&opCodeInfos, "JMPC", &info);
-		info.opCode = OP_BADOP;
-		hm_Push(&opCodeInfos, "GOTOC", &info);
+			hm_Push(&opCodeInfos, "BRNEQ", &info);
+			hm_Push(&opCodeInfos, "JMPNEQ", &info);
+			hm_Push(&opCodeInfos, "GOTONEQ", &info);
 
-		info.opCode = OP_BADOP;
-		hm_Push(&opCodeInfos, "BRLT", &info);
-		info.opCode = OP_BADOP;
-		hm_Push(&opCodeInfos, "JMPLT", &info);
-		info.opCode = OP_BADOP;
-		hm_Push(&opCodeInfos, "GOTOLT", &info);
+			hm_Push(&opCodeInfos, "BRZC", &info);
+			hm_Push(&opCodeInfos, "JMPZC", &info);
+			hm_Push(&opCodeInfos, "GOTOZC", &info);
+		}
 
-		info.condType = COND_CarryZero;
-		info.opCode = OP_BADOP;
-		hm_Push(&opCodeInfos, "BRCZ", &info);
-		info.opCode = OP_BADOP;
-		hm_Push(&opCodeInfos, "JMPCZ", &info);
-		info.opCode = OP_BADOP;
-		hm_Push(&opCodeInfos, "GOTOCZ", &info);
+		info.cond = COND_UnsignedGreaterThanOrEqual;
+		{
+			hm_Push(&opCodeInfos, "BRUGTE", &info);
+			hm_Push(&opCodeInfos, "JMPUGTE", &info);
+			hm_Push(&opCodeInfos, "GOTOUGTE", &info);
 
-		info.opCode = OP_BADOP;
-		hm_Push(&opCodeInfos, "BRLTE", &info);
-		info.opCode = OP_BADOP;
-		hm_Push(&opCodeInfos, "JMPLTE", &info);
-		info.opCode = OP_BADOP;
-		hm_Push(&opCodeInfos, "GOTOLTE", &info);
+			hm_Push(&opCodeInfos, "BRCS", &info);
+			hm_Push(&opCodeInfos, "JMPCS", &info);
+			hm_Push(&opCodeInfos, "GOTOCS", &info);
+		}
 
-		info.condType = COND_NotCarryNotZero;
-		info.opCode = OP_BADOP;
-		hm_Push(&opCodeInfos, "BRNCNZ", &info);
-		info.opCode = OP_BADOP;
-		hm_Push(&opCodeInfos, "JMPNCNZ", &info);
-		info.opCode = OP_BADOP;
-		hm_Push(&opCodeInfos, "GOTONCNZ", &info);
+		info.cond = COND_UnsignedLowerThan;
+		{
+			hm_Push(&opCodeInfos, "BRULT", &info);
+			hm_Push(&opCodeInfos, "JMPULT", &info);
+			hm_Push(&opCodeInfos, "GOTOULT", &info);
 
-		info.opCode = OP_BADOP;
-		hm_Push(&opCodeInfos, "BRGT", &info);
-		info.opCode = OP_BADOP;
-		hm_Push(&opCodeInfos, "JMPGT", &info);
-		info.opCode = OP_BADOP;
-		hm_Push(&opCodeInfos, "GOTOGT", &info);
+			hm_Push(&opCodeInfos, "BRCC", &info);
+			hm_Push(&opCodeInfos, "JMPCC", &info);
+			hm_Push(&opCodeInfos, "GOTOCC", &info);
+		}
 
-		info.condType = COND_NotCarryZero;
-		info.opCode = OP_BADOP;
-		hm_Push(&opCodeInfos, "BRNCZ", &info);
-		info.opCode = OP_BADOP;
-		hm_Push(&opCodeInfos, "JMPNCZ", &info);
-		info.opCode = OP_BADOP;
-		hm_Push(&opCodeInfos, "GOTONCZ", &info);
+		info.cond = COND_Negative;
+		{
+			hm_Push(&opCodeInfos, "BRMI", &info);
+			hm_Push(&opCodeInfos, "JMPMI", &info);
+			hm_Push(&opCodeInfos, "GOTOMI", &info);
 
-		info.opCode = OP_BADOP;
-		hm_Push(&opCodeInfos, "BRGTE", &info);
-		info.opCode = OP_BADOP;
-		hm_Push(&opCodeInfos, "JMPGTE", &info);
-		info.opCode = OP_BADOP;
-		hm_Push(&opCodeInfos, "GOTOGTE", &info);
+			hm_Push(&opCodeInfos, "BRNEG", &info);
+			hm_Push(&opCodeInfos, "JMPNEG", &info);
+			hm_Push(&opCodeInfos, "GOTONEG", &info);
 
-		info.condType = COND_NotCarry;
-		info.opCode = OP_BADOP;
-		hm_Push(&opCodeInfos, "BRNC", &info);
-		info.opCode = OP_BADOP;
-		hm_Push(&opCodeInfos, "JMPNC", &info);
-		info.opCode = OP_BADOP;
-		hm_Push(&opCodeInfos, "GOTONC", &info);
+			hm_Push(&opCodeInfos, "BRNS", &info);
+			hm_Push(&opCodeInfos, "JMPNS", &info);
+			hm_Push(&opCodeInfos, "GOTONS", &info);
+		}
 
-		info.condType = COND_CarryNotZero;
-		info.opCode = OP_BADOP;
-		hm_Push(&opCodeInfos, "BRCNZ", &info);
-		info.opCode = OP_BADOP;
-		hm_Push(&opCodeInfos, "JMPCNZ", &info);
-		info.opCode = OP_BADOP;
-		hm_Push(&opCodeInfos, "GOTOCNZ", &info);
+		info.cond = COND_Positive;
+		{
+			hm_Push(&opCodeInfos, "BRPL", &info);
+			hm_Push(&opCodeInfos, "JMPPL", &info);
+			hm_Push(&opCodeInfos, "GOTOPL", &info);
+
+			hm_Push(&opCodeInfos, "BRPOS", &info);
+			hm_Push(&opCodeInfos, "JMPPOS", &info);
+			hm_Push(&opCodeInfos, "GOTOPOS", &info);
+
+			hm_Push(&opCodeInfos, "BRNC", &info);
+			hm_Push(&opCodeInfos, "JMPNC", &info);
+			hm_Push(&opCodeInfos, "GOTONC", &info);
+		}
+
+		info.cond = COND_Overflow;
+		{
+			hm_Push(&opCodeInfos, "BRVS", &info);
+			hm_Push(&opCodeInfos, "JMPVS", &info);
+			hm_Push(&opCodeInfos, "GOTOVS", &info);
+		}
+
+		info.cond = COND_NotOverflow;
+		{
+			hm_Push(&opCodeInfos, "BRVC", &info);
+			hm_Push(&opCodeInfos, "JMPVC", &info);
+			hm_Push(&opCodeInfos, "GOTOVC", &info);
+		}
+
+		info.cond = COND_UnsignedGreaterThan;
+		{
+			hm_Push(&opCodeInfos, "BRUGT", &info);
+			hm_Push(&opCodeInfos, "JMPUGT", &info);
+			hm_Push(&opCodeInfos, "GOTOUGT", &info);
+		}
+
+		info.cond = COND_UnsignedLowerThanOrEqual;
+		{
+			hm_Push(&opCodeInfos, "BRULTE", &info);
+			hm_Push(&opCodeInfos, "JMPULTE", &info);
+			hm_Push(&opCodeInfos, "GOTOULTE", &info);
+		}
+
+		info.cond = COND_SignedGreaterThanOrEqual;
+		{
+			hm_Push(&opCodeInfos, "BRSGTE", &info);
+			hm_Push(&opCodeInfos, "JMPSGTE", &info);
+			hm_Push(&opCodeInfos, "GOTOSGTE", &info);
+
+			hm_Push(&opCodeInfos, "BRGTE", &info);
+			hm_Push(&opCodeInfos, "JMPGTE", &info);
+			hm_Push(&opCodeInfos, "GOTOGTE", &info);
+		}
+
+		info.cond = COND_SignedLowerThan;
+		{
+			hm_Push(&opCodeInfos, "BRSLT", &info);
+			hm_Push(&opCodeInfos, "JMPSLT", &info);
+			hm_Push(&opCodeInfos, "GOTOSLT", &info);
+
+			hm_Push(&opCodeInfos, "BRLT", &info);
+			hm_Push(&opCodeInfos, "JMPLT", &info);
+			hm_Push(&opCodeInfos, "GOTOLT", &info);
+		}
+
+		info.cond = COND_SignedGreaterThan;
+		{
+			hm_Push(&opCodeInfos, "BRSGT", &info);
+			hm_Push(&opCodeInfos, "JMPSGT", &info);
+			hm_Push(&opCodeInfos, "GOTOSGT", &info);
+
+			hm_Push(&opCodeInfos, "BRGT", &info);
+			hm_Push(&opCodeInfos, "JMPGT", &info);
+			hm_Push(&opCodeInfos, "GOTOGT", &info);
+		}
+
+		info.cond = COND_SignedLowerOrEqual;
+		{
+			hm_Push(&opCodeInfos, "BRSLTE", &info);
+			hm_Push(&opCodeInfos, "JMPSLTE", &info);
+			hm_Push(&opCodeInfos, "GOTOSLTE", &info);
+
+			hm_Push(&opCodeInfos, "BRLTE", &info);
+			hm_Push(&opCodeInfos, "JMPLTE", &info);
+			hm_Push(&opCodeInfos, "GOTOLTE", &info);
+		}
 	}
 
-	info.condType = COND_None;
+	info.cond = COND_Always;
 
 	info.treatment = ADDR_ABS;
 	{
@@ -576,10 +625,10 @@ InstLine ConstructInstLine(const string lineStr, uint lineNum) {
 			return GetEmptyInstLine();
 		}
 
-		if (info.condType != COND_None) instLine.modes[0] = info.condType;
+		if (info.cond != COND_Always) instLine.modes[0] = info.cond;
 
 		ushort jmpAddr = instLine.argValues[0];
-		ushort tempCodePtr = codePtr + 1 + (info.condType != COND_None) + 1;
+		ushort tempCodePtr = codePtr + 1 + (info.cond != COND_Always) + 1;
 
 		int diff = jmpAddr;
 		diff -= tempCodePtr;
@@ -587,14 +636,14 @@ InstLine ConstructInstLine(const string lineStr, uint lineNum) {
 		if ((diff <= INT8_MAX) && (diff >= INT8_MIN)) {
 			instLine.oneByteValues = true;
 			instLine.argValues[0] = diff;
-			if (info.condType == COND_None) {
+			if (info.cond == COND_Always) {
 				instLine.opCode = OP_JMPR;
 			} else {
 				instLine.opCode = OP_JMPRC;
 			}
 		} else {
 			instLine.argValues[0] = jmpAddr;
-			if (info.condType == COND_None) {
+			if (info.cond == COND_Always) {
 				instLine.opCode = OP_JMPA;
 			} else {
 				instLine.opCode = OP_JMPAC;

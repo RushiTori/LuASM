@@ -1,91 +1,22 @@
-N : check if Carry flag is NOT set(1) or is SET(0)
-C : check the Carry flag
-c : actual state of Carry flag
-n : check if Zero flag is NOT set(1) or is SET(0)
-Z : check the Zero flag
-z : actual state of Zero flag
+E    or EQ  or ZS : equal                     : Z set
+NE   or NEQ or ZC : not equal                 : Z clear
 
+UGTE or CS        : greater than or equal (U) : C set
+ULT  or CC        : less than (U)             : C clear
 
+MI   or NEG or NS : negative                  : N set
+PL   or POS or NC : positive                  : N clear
 
-//Smol
+VS                : overflow                  : V set
+VC                : no overflow               : V clear
 
-n|Z|z| O
-1|0|1| X //1
-1|0|0| X //1
+UGT               : greater than (U)          : Z clear and C set
+ULTE              : less than or equal (U)    : Z set or C clear
 
-0|0|0| 1
-0|0|1| 1
+SGTE or GTE       : greater than or equal (S) : (N set and V set) or (N clear and V clear)
+SLT  or LT        : less than (S)             : (N set and V clear) or (N clear and V set)
 
-0|1|0| 0
-0|1|1| 1
-1|1|0| 1
-1|1|1| 0
+SGT  or GT        : greater than (S)          : Z clear and ((N set and V set) or (N clear and V clear))
+SLTE or LTE       : less than or equal (S)    : Z set or (N set and V clear) or (N clear and V set)
 
-(!Z || (n ^ z))
-
-// Result
-
-0|0|0|0|0|0| 1
-0|0|0|0|0|1| 1
-0|0|0|0|1|0| 0
-0|0|0|0|1|1| 1
-0|0|0|1|0|0| 1
-0|0|0|1|0|1| 1
-0|0|0|1|1|0| 1
-0|0|0|1|1|1| 0
-0|0|1|0|0|0| 1
-0|0|1|0|0|1| 1
-0|0|1|0|1|0| 0
-0|0|1|0|1|1| 1
-0|0|1|1|0|0| 1
-0|0|1|1|0|1| 1
-0|0|1|1|1|0| 1
-0|0|1|1|1|1| 0
-0|1|0|0|0|0| 0
-0|1|0|0|0|1| 0
-0|1|0|0|1|0| 0
-0|1|0|0|1|1| 0
-0|1|0|1|0|0| 0
-0|1|0|1|0|1| 0
-0|1|0|1|1|0| 0
-0|1|0|1|1|1| 0
-0|1|1|0|0|0| 1
-0|1|1|0|0|1| 1
-0|1|1|0|1|0| 0
-0|1|1|0|1|1| 1
-0|1|1|1|0|0| 1
-0|1|1|1|0|1| 1
-0|1|1|1|1|0| 1
-0|1|1|1|1|1| 0
-1|0|0|0|0|0| 1
-1|0|0|0|0|1| 1
-1|0|0|0|1|0| 0
-1|0|0|0|1|1| 1
-1|0|0|1|0|0| 1
-1|0|0|1|0|1| 1
-1|0|0|1|1|0| 1
-1|0|0|1|1|1| 0
-1|0|1|0|0|0| 1
-1|0|1|0|0|1| 1
-1|0|1|0|1|0| 0
-1|0|1|0|1|1| 1
-1|0|1|1|0|0| 1
-1|0|1|1|0|1| 1
-1|0|1|1|1|0| 1
-1|0|1|1|1|1| 0
-1|1|0|0|0|0| 1
-1|1|0|0|0|1| 1
-1|1|0|0|1|0| 0
-1|1|0|0|1|1| 1
-1|1|0|1|0|0| 1
-1|1|0|1|0|1| 1
-1|1|0|1|1|0| 1
-1|1|0|1|1|1| 0
-1|1|1|0|0|0| 0
-1|1|1|0|0|1| 0
-1|1|1|0|1|0| 0
-1|1|1|0|1|1| 0
-1|1|1|1|0|0| 0
-1|1|1|1|0|1| 0
-1|1|1|1|1|0| 0
-1|1|1|1|1|1| 0
+(nothing)         : always                    : no checks

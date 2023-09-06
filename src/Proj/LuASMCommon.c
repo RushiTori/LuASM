@@ -28,7 +28,7 @@ void resetLuASM() {
 	reg_x = 0;
 	reg_y = 0;
 	reg_z = 0;
-	flags = FLAG_UnsignedMode | FLAG_FrameClockMode;
+	flags = FLAG_FrameClockMode;
 	setFlag(FLAG_EndianMode, systemEndianness);
 }
 
@@ -232,27 +232,40 @@ ushort modeAsSrc(uchar mode) {
 	return srcValue;
 }
 
-ushort* modeAsReg(uchar mode) {
-	switch (mode) {
-		default:
-		case 0b0000:
-			return &reg_x;
-			break;
+bool evalCond(uchar cond) {
+	bool result = false;
 
-		case 0b0001:
-			return &reg_y;
-			break;
+	bool Zset = isFlagSet(FLAG_Zero);
+	bool Cset = isFlagSet(FLAG_Carry);
+	bool Nset = isFlagSet(FLAG_Negative);
+	bool Vset = isFlagSet(FLAG_Overflow);
 
-		case 0b0010:
-			return &reg_z;
+	switch (cond & COND_CondField) {
+		case COND_Equal:
+			result = Zset;
 			break;
-
-		case 0b0011:
-			return &stackPtr;
+		case COND_UnsignedGreaterThanOrEqual:
+			result = Cset;
 			break;
-
-		case 0b0100:
-			return &flags;
+		case COND_Negative:
+			result = Nset;
+			break;
+		case COND_Overflow:
+			result = Vset;
+			break;
+		case COND_UnsignedGreaterThan:
+			result = !Zset && Cset;
+			break;
+		case COND_SignedGreaterThanOrEqual:
+			result = (Nset == Vset);
+			break;
+		case COND_SignedGreaterThan:
+			result = !Zset && (Nset == Vset);
+			break;
+		case COND_Always:
+			result = true;
 			break;
 	}
+
+	return result ^ (cond & COND_InverseBit);
 }

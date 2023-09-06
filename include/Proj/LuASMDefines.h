@@ -3,23 +3,22 @@
 
 #include <LuLib/LuTypes.h>
 
-#define FLAG_Zero           ((ushort)0b1000000000000000) // check if zero
-#define FLAG_Carry          ((ushort)0b0100000000000000) // check if greater than MAX
-#define FLAG_Negative       ((ushort)0b0010000000000000) // check most significant bit
-#define FLAG_Overflow       ((ushort)0b0001000000000000) // check if greater than MAX (check for signedness)
+#define FLAG_Zero           ((ushort)0b1000000000000000)
+#define FLAG_Carry          ((ushort)0b0100000000000000)
+#define FLAG_Negative       ((ushort)0b0010000000000000)
+#define FLAG_Overflow       ((ushort)0b0001000000000000)
 
-#define FLAG_8BitsMode      ((ushort)0b0000000010000000)
-#define FLAG_EndianMode     ((ushort)0b0000000001000000)
-#define FLAG_UnsignedMode   ((ushort)0b0000000000100000)
-#define FLAG_FrameClockMode ((ushort)0b0000000000010000)
+#define FLAG_8BitsMode      ((ushort)0b0000000000000100)
+#define FLAG_EndianMode     ((ushort)0b0000000000000010)
+#define FLAG_FrameClockMode ((ushort)0b0000000000000001)
 
 #define RAM_UnknownTerritoryBegin ((ushort)0x0000)
 #define RAM_UnknownTerritoryEnd   ((ushort)0x00FF)
 
 #define RAM_StackBegin            ((ushort)0x0100)
-#define RAM_StackEnd              ((ushort)0x02FF)
+#define RAM_StackEnd              ((ushort)0x0FFF)
 
-#define RAM_UserVarBegin          ((ushort)0x0300)
+#define RAM_UserVarBegin          ((ushort)0x1000)
 #define RAM_UserVarEnd            ((ushort)0x7FFF)
 
 #define RAM_UserConstBegin        ((ushort)0x8000)
@@ -45,29 +44,34 @@ typedef enum InstArgMode {
   MODE_RAM_VALUE = 0b1100,
 } InstArgMode;
 
-#define JMP_CheckZ 0b1000
-#define JMP_NotZ   0b0100
-#define JMP_CheckC 0b0010
-#define JMP_NotC   0b0001
+#define COND_InverseBit 0b0001
+#define COND_CondField  0b1110
 
-#define evalCond(notC, checkC, notZ, checkZ) ((!(checkC) || (isFlagSet(FLAG_Carry) ^ (bool)(notC))) && \
-                                              (!(checkZ) || (isFlagSet(FLAG_Zero)  ^ (bool)(notZ))))
+typedef enum InstCond {
+  COND_Equal                      = 0b0000,
+  COND_NotEqual                   = 0b0001,
 
-typedef enum ConditionType {
-	COND_None            = (!JMP_CheckZ) | (!JMP_NotZ) | (!JMP_CheckC) | (!JMP_NotC),
+  COND_UnsignedGreaterThanOrEqual = 0b0010,
+  COND_UnsignedLowerThan          = 0b0011,
 
-	COND_Zero            = ( JMP_CheckZ) | (!JMP_NotZ) | (!JMP_CheckC) | (!JMP_NotC),
-	COND_NotZero         = ( JMP_CheckZ) | ( JMP_NotZ) | (!JMP_CheckC) | (!JMP_NotC),
+  COND_Negative                   = 0b0100,
+  COND_Positive                   = 0b0101,
 
-	COND_Carry           = (!JMP_CheckZ) | (!JMP_NotZ) | ( JMP_CheckC) | (!JMP_NotC),
-	COND_NotCarry        = (!JMP_CheckZ) | (!JMP_NotZ) | ( JMP_CheckC) | ( JMP_NotC),
+  COND_Overflow                   = 0b0110,
+  COND_NotOverflow                = 0b0111,
 
-	COND_CarryZero       = ( JMP_CheckZ) | (!JMP_NotZ) | ( JMP_CheckC) | (!JMP_NotC),
-	COND_NotCarryZero    = ( JMP_CheckZ) | (!JMP_NotZ) | ( JMP_CheckC) | ( JMP_NotC),
+  COND_UnsignedGreaterThan        = 0b1000,
+  COND_UnsignedLowerThanOrEqual   = 0b1001,
 
-	COND_CarryNotZero    = ( JMP_CheckZ) | ( JMP_NotZ) | ( JMP_CheckC) | (!JMP_NotC),
-	COND_NotCarryNotZero = ( JMP_CheckZ) | ( JMP_NotZ) | ( JMP_CheckC) | ( JMP_NotC),
-} ConditionType;
+  COND_SignedGreaterThanOrEqual   = 0b1010,
+  COND_SignedLowerThan            = 0b1011,
+
+  COND_SignedGreaterThan          = 0b1100,
+  COND_SignedLowerOrEqual         = 0b1101,
+
+  COND_Always                     = 0b1110,
+  COND_Never                      = 0b1111,
+} InstCond;
 
 typedef enum InstArgTreament {
 	NO_ARGS,

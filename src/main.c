@@ -1,21 +1,5 @@
 #include "main.h"
 
-// Test Fibo
-/*
-main:
-  STR x, 1
-  STR y, 1
-
-fibo:
-  STR z, x
-  ADD x, x, y
-  BRc end
-  STR y, z
-  BR fibo
-
-end:
-*/
-
 void printLuASMStates(FILE* outFile) {
 	fprintf(outFile, "Registers :\n");
 	fprintf(outFile, "\tX : %d\n", reg_x);
@@ -30,7 +14,6 @@ void printLuASMStates(FILE* outFile) {
 	fprintf(outFile, "\tOverflow       : %d\n", isFlagSet(FLAG_Overflow));
 	fprintf(outFile, "\t8BitsMode      : %d\n", isFlagSet(FLAG_8BitsMode));
 	fprintf(outFile, "\tEndianMode     : %d\n", isFlagSet(FLAG_EndianMode));
-	fprintf(outFile, "\tUnsignedMode   : %d\n", isFlagSet(FLAG_UnsignedMode));
 	fprintf(outFile, "\tFrameClockMode : %d\n", isFlagSet(FLAG_FrameClockMode));
 }
 
@@ -39,7 +22,6 @@ int main(int argc, string* argv) {
 	setup("Lu ASM Project", argv, argc);
 
 	resetLuASM();
-
 
 	initOpCodeInfos();
 	assembleParser("ressources/scripts/LuASMTesting.luasm");
