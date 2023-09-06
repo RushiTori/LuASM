@@ -676,8 +676,8 @@ void assembleParser(const string path) {
 		} else if (instLine.modeCount == 2) {
 			codeRAM[codePtr++] = combineModeLowHigh(instLine.modes[1], instLine.modes[0]);
 		} else if (instLine.modeCount == 3) {
-			codeRAM[codePtr++] = combineModeLowHigh(instLine.modes[1], instLine.modes[0]);
-			codeRAM[codePtr++] = instLine.modes[2];
+			codeRAM[codePtr++] = instLine.modes[0];
+			codeRAM[codePtr++] = combineModeLowHigh(instLine.modes[2], instLine.modes[1]);
 		}
 
 		for (uint j = 0; j < instLine.valuesCount; j++) {

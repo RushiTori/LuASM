@@ -37,6 +37,7 @@ ushort readCodeRAM(bool readOneByte);
 void pushStack(ushort val, bool checkByteMode);
 ushort popStack(bool checkByteMode);
 
+ushort readBytes(void* src);
 void writeBytes(void* dest, ushort val);
 
 void* modeAsDest(uchar mode);

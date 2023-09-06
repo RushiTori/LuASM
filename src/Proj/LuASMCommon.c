@@ -136,6 +136,16 @@ ushort popStack(bool checkByteMode) {
 
 bool isReg(void* addr) { return (addr == &reg_x) || (addr == &reg_y) || (addr == &reg_z) || (addr == &stackPtr); }
 
+ushort readBytes(void* src) {
+	if (isFlagSet(FLAG_8BitsMode)) return *(uchar*)src;
+
+	bool endianMode = isFlagSet(FLAG_EndianMode);
+	ushort temp = *(ushort*)src;
+
+	if (!isReg(src) && (endianMode != systemEndianness)) temp = swapEndian(temp);
+	return temp;
+}
+
 void writeBytes(void* dest, ushort val) {
 	bool endianMode = isFlagSet(FLAG_EndianMode);
 	bool byteMode = isFlagSet(FLAG_8BitsMode);

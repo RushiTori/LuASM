@@ -2,11 +2,11 @@
 
 void NOP() {
 	// printf("Registers :\n");
-	printf("\tX      : %d\n", reg_x);
+	printf("\tX      : %d\n", (ushort)reg_x);
 	// printf("\tY      : %d\n", reg_y);
 	// printf("\tZ      : %d\n", reg_z);
 	// printf("\tsPtr   : %d\n", stackPtr);
-	// printf("\t[sPtr] : %d\n", readMiniRAM(stackPtr-2));
+	// printf("\t[sPtr] : %d\n", readMiniRAM(stackPtr - 2));
 	// printf("\tpc     : %d\n", codePtr - 1);
 
 	// printf("State Flags :\n");
@@ -49,77 +49,137 @@ void SCF() {
 }
 
 void LSL() {
-	// WIP
 	uchar mode = readCodeRAM(true);
 	uchar modeHigh = extractModeHigh(mode);
 	uchar modeLow = extractModeLow(mode);
 
 	void* dest = modeAsDest(modeHigh);
 	ushort srcValue = modeAsSrc(modeLow);
+	ushort maxShift = CHAR_BIT * ((isFlagSet(FLAG_8BitsMode)) ? sizeof(uchar) : sizeof(ushort));
+	srcValue %= (maxShift + 1);
+
+	ushort result = readBytes(dest);
+	result <<= srcValue;
+	writeBytes(dest, result);
+
+	if (isFlagSet(FLAG_8BitsMode)) result &= 0xFF;
+	setFlag(FLAG_Zero, result == 0);
 }
 
 void LSR() {
-	// WIP
 	uchar mode = readCodeRAM(true);
 	uchar modeHigh = extractModeHigh(mode);
 	uchar modeLow = extractModeLow(mode);
 
 	void* dest = modeAsDest(modeHigh);
 	ushort srcValue = modeAsSrc(modeLow);
+	ushort maxShift = CHAR_BIT * ((isFlagSet(FLAG_8BitsMode)) ? sizeof(uchar) : sizeof(ushort));
+	srcValue %= (maxShift + 1);
+
+	ushort result = readBytes(dest);
+	result >>= srcValue;
+	writeBytes(dest, result);
+
+	if (isFlagSet(FLAG_8BitsMode)) result &= 0xFF;
+	setFlag(FLAG_Zero, result == 0);
 }
 
 void ASL() {
-	// WIP
 	uchar mode = readCodeRAM(true);
 	uchar modeHigh = extractModeHigh(mode);
 	uchar modeLow = extractModeLow(mode);
 
 	void* dest = modeAsDest(modeHigh);
 	ushort srcValue = modeAsSrc(modeLow);
+	ushort maxShift = CHAR_BIT * ((isFlagSet(FLAG_8BitsMode)) ? sizeof(uchar) : sizeof(ushort));
+	srcValue %= maxShift;
+
+	if (isFlagSet(FLAG_8BitsMode)) {
+		uchar result = readBytes(dest);
+		bool signBit = result & 0x80;
+		result <<= srcValue;
+		if (signBit) result |= 0x80;
+		writeBytes(dest, result);
+	} else {
+		ushort result = readBytes(dest);
+		bool signBit = result & 0x8000;
+		result <<= srcValue;
+		if (signBit) result |= 0x8000;
+		writeBytes(dest, result);
+	}
 }
 
 void ASR() {
-	// WIP
 	uchar mode = readCodeRAM(true);
 	uchar modeHigh = extractModeHigh(mode);
 	uchar modeLow = extractModeLow(mode);
 
 	void* dest = modeAsDest(modeHigh);
 	ushort srcValue = modeAsSrc(modeLow);
+	ushort maxShift = CHAR_BIT * ((isFlagSet(FLAG_8BitsMode)) ? sizeof(uchar) : sizeof(ushort));
+	srcValue %= maxShift;
+
+	if (isFlagSet(FLAG_8BitsMode)) {
+		uchar result = readBytes(dest);
+		bool signBit = result & 0x80;
+		uchar signMask = ~(0x7F >> srcValue);
+		result >>= srcValue;
+		if (signBit) result |= signMask;
+		writeBytes(dest, result);
+	} else {
+		ushort result = readBytes(dest);
+		bool signBit = result & 0x8000;
+		ushort signMask = ~(0x7FFF >> srcValue);
+		result >>= srcValue;
+		if (signBit) result |= signMask;
+		writeBytes(dest, result);
+	}
 }
 
 void BSL() {
-	// WIP
 	uchar mode = readCodeRAM(true);
 	uchar modeHigh = extractModeHigh(mode);
 	uchar modeLow = extractModeLow(mode);
 
 	void* dest = modeAsDest(modeHigh);
 	ushort srcValue = modeAsSrc(modeLow);
+	ushort maxShift = CHAR_BIT * ((isFlagSet(FLAG_8BitsMode)) ? sizeof(uchar) : sizeof(ushort));
+	srcValue %= (maxShift + 1);
+
+	if (isFlagSet(FLAG_8BitsMode)) {
+		*((uchar*)dest) = (*((uchar*)dest) << srcValue) | (*((uchar*)dest) >> (maxShift - srcValue));
+	} else {
+		ushort result = readBytes(dest);
+		result = (result << srcValue) | (result >> (maxShift - srcValue));
+		writeBytes(dest, result);
+	}
 }
 
 void BSR() {
-	// WIP
 	uchar mode = readCodeRAM(true);
 	uchar modeHigh = extractModeHigh(mode);
 	uchar modeLow = extractModeLow(mode);
 
 	void* dest = modeAsDest(modeHigh);
 	ushort srcValue = modeAsSrc(modeLow);
+	ushort maxShift = CHAR_BIT * ((isFlagSet(FLAG_8BitsMode)) ? sizeof(uchar) : sizeof(ushort));
+	srcValue %= (maxShift + 1);
+
+	if (isFlagSet(FLAG_8BitsMode)) {
+		*((uchar*)dest) = (*((uchar*)dest) >> srcValue) | (*((uchar*)dest) << (maxShift - srcValue));
+	} else {
+		ushort result = readBytes(dest);
+		result = (result >> srcValue) | (result << (maxShift - srcValue));
+		writeBytes(dest, result);
+	}
 }
 
 void INC() {
 	uchar mode = readCodeRAM(true);
 	void* dest = modeAsDest(mode);
 
-	int result;
-	if (isFlagSet(FLAG_8BitsMode)) {
-		(*((uchar*)dest))++;
-		result = *((char*)dest);
-	} else {
-		(*((ushort*)dest))++;
-		result = *((short*)dest);
-	}
+	int result = readBytes(dest);
+	writeBytes(dest, ++result);
 
 	setStateFlags(false, result);
 }
@@ -128,14 +188,8 @@ void DEC() {
 	uchar mode = readCodeRAM(true);
 	void* dest = modeAsDest(mode);
 
-	int result;
-	if (isFlagSet(FLAG_8BitsMode)) {
-		(*((uchar*)dest))--;
-		result = *((char*)dest);
-	} else {
-		(*((ushort*)dest))--;
-		result = *((short*)dest);
-	}
+	int result = readBytes(dest);
+	writeBytes(dest, --result);
 
 	setStateFlags(true, result);
 }
@@ -152,6 +206,7 @@ void AND() {
 
 	ushort result = opA & opB;
 	writeBytes(dest, result);
+	if (isFlagSet(FLAG_8BitsMode)) result &= 0xFF;
 	setFlag(FLAG_Zero, result == 0);
 }
 
@@ -167,6 +222,7 @@ void NAND() {
 
 	ushort result = ~(opA & opB);
 	writeBytes(dest, result);
+	if (isFlagSet(FLAG_8BitsMode)) result &= 0xFF;
 	setFlag(FLAG_Zero, result == 0);
 }
 
@@ -182,6 +238,7 @@ void OR() {
 
 	ushort result = opA | opB;
 	writeBytes(dest, result);
+	if (isFlagSet(FLAG_8BitsMode)) result &= 0xFF;
 	setFlag(FLAG_Zero, result == 0);
 }
 
@@ -197,6 +254,7 @@ void NOR() {
 
 	ushort result = ~(opA | opB);
 	writeBytes(dest, result);
+	if (isFlagSet(FLAG_8BitsMode)) result &= 0xFF;
 	setFlag(FLAG_Zero, result == 0);
 }
 
@@ -212,6 +270,7 @@ void XOR() {
 
 	ushort result = opA ^ opB;
 	writeBytes(dest, result);
+	if (isFlagSet(FLAG_8BitsMode)) result &= 0xFF;
 	setFlag(FLAG_Zero, result == 0);
 }
 
@@ -227,6 +286,7 @@ void XNOR() {
 
 	ushort result = ~(opA ^ opB);
 	writeBytes(dest, result);
+	if (isFlagSet(FLAG_8BitsMode)) result &= 0xFF;
 	setFlag(FLAG_Zero, result == 0);
 }
 
@@ -254,7 +314,7 @@ void ADD() {
 	ushort opB = modeAsSrc(modeBLow);
 	int result = opA + opB;
 
-	writeBytes(dest, result & UINT16_MAX);
+	writeBytes(dest, result);
 
 	setStateFlags(false, result);
 }
@@ -270,7 +330,7 @@ void ADC() {
 	ushort opB = modeAsSrc(modeBLow);
 	int result = opA + opB + isFlagSet(FLAG_Carry);
 
-	writeBytes(dest, result & UINT16_MAX);
+	writeBytes(dest, result);
 
 	setStateFlags(false, result);
 }
@@ -337,6 +397,7 @@ void DIV() {
 
 	writeBytes(dest, result);
 
+	if (isFlagSet(FLAG_8BitsMode)) result &= 0xFF;
 	setFlag(FLAG_Zero, result == 0);
 }
 
@@ -353,6 +414,7 @@ void MOD() {
 
 	writeBytes(dest, result);
 
+	if (isFlagSet(FLAG_8BitsMode)) result &= 0xFF;
 	setFlag(FLAG_Zero, result == 0);
 }
 

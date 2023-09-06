@@ -29,9 +29,9 @@ int main(int argc, string* argv) {
 	bool interupt = false;
 	while (!interupt) {
 		uchar opCode = readCodeRAM(true);
-		// printf("%d : %d\n", codePtr - 1, opCode);
+		//printf("codeRAM[%d] : %d\n", codePtr - 1, opCode);
 		if (opCode == OP_NOP) {
-			//printf("%d\n", reg_x);
+			// printf("%d\n", reg_x);
 		}
 
 		switch (opCode) {
@@ -54,6 +54,24 @@ int main(int argc, string* argv) {
 				break;
 			case OP_SCF:
 				SCF();
+				break;
+			case OP_LSL:
+				LSL();
+				break;
+			case OP_LSR:
+				LSR();
+				break;
+			case OP_ASL:
+				ASL();
+				break;
+			case OP_ASR:
+				ASR();
+				break;
+			case OP_BSL:
+				BSL();
+				break;
+			case OP_BSR:
+				BSR();
 				break;
 			case OP_INC:
 				INC();
@@ -131,7 +149,6 @@ int main(int argc, string* argv) {
 				POP();
 				break;
 		}
-
 	}
 
 	printf("\nProgram closed successfully !\n");
