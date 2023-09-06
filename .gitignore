@@ -25,4 +25,4 @@
 temp/
 
 # Logs
-leak_infos.txt
+leak_info.txt
