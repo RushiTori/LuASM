@@ -189,16 +189,14 @@ BR/JMP/GOTO rel : 0x22
   args :
     rel : an address, most likely a label, but can be a {value}
 
-BR/JMP/GOTO e|ne|lt|lte|gt  |gte|??|??? abs : 0x23
-            z nz c  cz  ncnz ncz nc cnz
+BR/JMP/GOTO {cond} abs : 0x23
   space taken in codeRAM : 4
   representation in codeRAM : opCode mode absValue
   description : branches to an absolute address is the specified condition is true
   args :
     abs : an address, most likely a label, but can be a {value}
 
-BR/JMP/GOTO e|ne|lt|lte|gt  |gte|??|??? rel : 0x24
-            z nz c  cz  ncnz ncz nc cnz
+BR/JMP/GOTO {cond} rel : 0x24
   space taken in codeRAM : 3
   representation in codeRAM : opCode mode relValue
   description : branches to a relative address is the specified condition is true

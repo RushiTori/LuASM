@@ -22,14 +22,18 @@ int main(int argc, string* argv) {
 	setup("Lu ASM Project", argv, argc);
 
 	resetLuASM();
-
-	initOpCodeInfos();
-	assembleParser("ressources/scripts/LuASMTesting.luasm");
+	assembleTokens("ressources/scripts/LuASMTesting.luasm");
+	// initOpCodeInfos();
+	// assembleParser("ressources/scripts/LuASMTesting.luasm");
 
 	bool interupt = false;
 	while (!interupt) {
+		if (sleepCycle > 0) {
+			sleepCycle--;
+			continue;
+		}
 		uchar opCode = readCodeRAM(true);
-		//printf("codeRAM[%d] : %d\n", codePtr - 1, opCode);
+		// printf("codeRAM[%d] : %d\n", codePtr - 1, opCode);
 		if (opCode == OP_NOP) {
 			// printf("%d\n", reg_x);
 		}

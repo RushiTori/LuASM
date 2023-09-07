@@ -5,12 +5,12 @@
 0x04: STZ
 0x05: SCF
 
-0x06: LSL // not added yet
-0x07: LSR // not added yet
-0x08: ASL // not added yet
-0x09: ASR // not added yet
-0x0A: BSL // not added yet
-0x0B: BSR // not added yet
+0x06: LSL
+0x07: LSR
+0x08: ASL
+0x09: ASR
+0x0A: BSL
+0x0B: BSR
 
 0x10: INC
 0x11: DEC
@@ -35,10 +35,8 @@
 
 0x21: abs BR/JMP/GOTO
 0x22: rel BR/JMP/GOTO
-0x23: abs BR/JMP/GOTO e|ne|lt|lte|gt  |gte|??|???
-                      z nz c  cz  ncnz ncz nc cnz
-0x24: rel BR/JMP/GOTO e|ne|lt|lte|gt  |gte|??|???
-                      z nz c  cz  ncnz ncz nc cnz
+0x23: abs BR/JMP/GOTO {cond}
+0x24: rel BR/JMP/GOTO {cond}
 
 0x25: CALL
 0x26: RET/RETURN

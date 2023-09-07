@@ -67,7 +67,7 @@ typedef enum InstCond {
   COND_SignedLowerThan            = 0b1011,
 
   COND_SignedGreaterThan          = 0b1100,
-  COND_SignedLowerOrEqual         = 0b1101,
+  COND_SignedLowerThanOrEqual     = 0b1101,
 
   COND_Always                     = 0b1110,
   COND_Never                      = 0b1111,

@@ -255,7 +255,7 @@ void initOpCodeInfos() {
 			hm_Push(&opCodeInfos, "GOTOGT", &info);
 		}
 
-		info.cond = COND_SignedLowerOrEqual;
+		info.cond = COND_SignedLowerThanOrEqual;
 		{
 			hm_Push(&opCodeInfos, "BRSLTE", &info);
 			hm_Push(&opCodeInfos, "JMPSLTE", &info);
@@ -658,7 +658,6 @@ InstLine ConstructInstLine(const string lineStr, uint lineNum) {
 }
 
 void assembleParser(const string path) {
-	// WIP
 	string* lines = io_LoadStrings(path);
 
 	bool failedParsing = false;

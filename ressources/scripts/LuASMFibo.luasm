@@ -1,12 +1,12 @@
 main:
-  STR x, 1
-  STR y, 1
+  str x, 1
+  str y, 1
 
 fibo:
-  STR z, x
-  ADD x, x, y
-  BRc end
-  STR y, z
-  BR fibo
+  str z, x
+  add x, x, y
+  jmpcs end
+  str y, z
+  jmp fibo
 
 end:
