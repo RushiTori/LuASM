@@ -3,6 +3,7 @@ main:
   str y, 1
 
 fibo:
+  nop
   str z, x
   add x, x, y
   jmpcs end

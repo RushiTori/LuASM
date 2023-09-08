@@ -67,5 +67,33 @@ typedef struct Token {
 
 Array tokenise(const string path);
 void assembleTokens(const string path);
+void printToken(const Token* tok);
+
+typedef struct TokenLine {
+	/*OpCode*/ uchar opCode;
+	/*InstArgMode*/ uchar modes[3];
+	uchar modeCount;
+	ushort argValues[3];
+	uchar valuesCount;
+	bool oneByteValues;
+	uint lineIdx;
+} TokenLine;
+
+void tokenAsOpCode(Token* tok, TokenLine* line);
+
+bool checkStopToken(Token** tok, uint* tokIdx, TokenType stopTok, TokenLine* line);
+
+bool tokenAsValue(Token** tok, uint* tokIdx, TokenType stopTok, TokenLine* line);
+bool tokenAsReg(Token** tok, uint* tokIdx, TokenType stopTok, TokenLine* line);
+void tokenAsCond(Token** tok, uint* tokIdx, TokenLine* line);
+bool tokenAsAddr(Token** tok, uint* tokIdx, TokenLine* line);
+bool tokenAsArg(Token** tok, uint* tokIdx, TokenType stopTok, TokenLine* line);
+bool tokenAsSrc(Token** tok, uint* tokIdx, TokenType stopTok, TokenLine* line);
+bool tokenAsDest(Token** tok, uint* tokIdx, TokenType stopTok, TokenLine* line);
+
+void writeTokenLine(TokenLine* tokLine);
+
+
+ushort labelAsCodeValue(Token** tok, uint* tokIdx, TokenLine* line);
 
 #endif	// LU_ASM_TOKENISER_H

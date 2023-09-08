@@ -1,1 +1,13 @@
-"\" "
+main:
+  str x, 1
+  str y, x
+
+fibo:
+  nop
+  add z, x, y
+  str y, x
+  str x, z
+  jmpcc fibo
+
+main:
+  
