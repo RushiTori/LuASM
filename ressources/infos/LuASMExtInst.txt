@@ -1,0 +1,115 @@
+0x0000: BADOP: {nothing}
+0x0001: NOP  : {nothing}
+0x0002: WAIT : src
+0x0003: STR  : dest, src
+0x0004: STZ  : dest
+0x0005: SCF  : src
+0x0006: LSL  : dest, src
+0x0007: LSR  : dest, src
+0x0008: ASL  : dest, src
+0x0009: ASR  : dest, src
+0x000A: BSL  : dest, src
+0x000B: BSR  : dest, src
+0x000C: INC  : dest
+0x000D: DEC  : dest
+0x000E: AND  : dest, src, src
+0x000F: NAND : dest, src, src
+0x0010: OR   : dest, src, src
+0x0011: NOR  : dest, src, src
+0x0012: XOR  : dest, src, src
+0x0013: XNOR : dest, src, src
+0x0014: NOT  : dest
+0x0015: ADD  : dest, src, src
+0x0016: ADC  : dest, src, src
+0x0017: SUB  : dest, src, src
+0x0018: SBC  : dest, src, src
+0x0019: MUL  : dest, src, src
+0x001A: DIV  : dest, src, src
+0x001B: MOD  : dest, src, src
+0x001C: CMP  : src,  src
+0x001D: JMPA : src
+0x001E: JMPAC: src
+0x001F: JMPR : src
+0x0020: JMPRC: src
+0x0021: CALL : src
+0x0022: RET  : {nothing}
+0x0023: PUSH : reg
+0x0024: POP  : reg
+
+0x0000: BADOP: 1        : 1
+0x0001: NOP  : 1        : 1
+0x0002: WAIT : 4        : 4
+0x0003: STR  : 3 * 4    : 12
+0x0004: STZ  : 3        : 3
+0x0005: SCF  : 4        : 4
+0x0006: LSL  : 3 * 4    : 12
+0x0007: LSR  : 3 * 4    : 12
+0x0008: ASL  : 3 * 4    : 12
+0x0009: ASR  : 3 * 4    : 12
+0x000A: BSL  : 3 * 4    : 12
+0x000B: BSR  : 3 * 4    : 12
+0x000C: INC  : 3        : 3
+0x000D: DEC  : 3        : 3
+0x000E: AND  : 3 * 4 * 4: 48
+0x000F: NAND : 3 * 4 * 4: 48
+0x0010: OR   : 3 * 4 * 4: 48
+0x0011: NOR  : 3 * 4 * 4: 48
+0x0012: XOR  : 3 * 4 * 4: 48
+0x0013: XNOR : 3 * 4 * 4: 48
+0x0014: NOT  : 3        : 3
+0x0015: ADD  : 3 * 4 * 4: 48
+0x0016: ADC  : 3 * 4 * 4: 48
+0x0017: SUB  : 3 * 4 * 4: 48
+0x0018: SBC  : 3 * 4 * 4: 48
+0x0019: MUL  : 3 * 4 * 4: 48
+0x001A: DIV  : 3 * 4 * 4: 48
+0x001B: MOD  : 3 * 4 * 4: 48
+0x001C: CMP  : 4 * 4    : 16
+0x001D: JMPA : 4        : 4
+0x001E: JMPAC: 4        : 4
+0x001F: JMPR : 4        : 4
+0x0020: JMPRC: 4        : 4
+0x0021: CALL : 4        : 4
+0x0022: RET  : 1        : 1
+0x0023: PUSH : 1        : 1
+0x0024: POP  : 1        : 1
+
+total : 769
+
+0x0000: BADOP: {nothing}
+0x0001: NOP  : {nothing}
+0x0002: RET  : {nothing}
+0x0003: PUSH : reg
+0x0004: POP  : reg
+0x0005: STZ  : dest
+0x0006: INC  : dest
+0x0007: DEC  : dest
+0x0008: NOT  : dest
+0x0009: WAIT : src
+0x000A: SCF  : src
+0x000B: JMPA : src
+0x000C: JMPAC: src
+0x000D: JMPR : src
+0x000E: JMPRC: src
+0x000F: CALL : src
+0x0010: STR  : dest, src
+0x0011: LSL  : dest, src
+0x0012: LSR  : dest, src
+0x0013: ASL  : dest, src
+0x0014: ASR  : dest, src
+0x0015: BSL  : dest, src
+0x0016: BSR  : dest, src
+0x0017: CMP  : src,  src
+0x0018: AND  : dest, src, src
+0x0019: NAND : dest, src, src
+0x001A: OR   : dest, src, src
+0x001B: NOR  : dest, src, src
+0x001C: XOR  : dest, src, src
+0x001D: XNOR : dest, src, src
+0x001E: ADD  : dest, src, src
+0x001F: ADC  : dest, src, src
+0x0020: SUB  : dest, src, src
+0x0021: SBC  : dest, src, src
+0x0022: MUL  : dest, src, src
+0x0023: DIV  : dest, src, src
+0x0024: MOD  : dest, src, src

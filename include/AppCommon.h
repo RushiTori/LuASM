@@ -5,7 +5,6 @@
 
 #include <LuLib.h>
 
-#include "LuASMInstParser.h"
 #include "LuASMInstructions.h"
 #include "LuASMTokeniser.h"
 

@@ -16,12 +16,12 @@ typedef struct LangLabel {
 	LangLabelType type;
 } LangLabel;
 
-HashMap codeLabels = {
-	NULL,			 // BinaryTree* data;
-	sizeof(ushort),	 // uint dataSize;
-	0,				 // uint elementCount;
-	false			 // bool containsPointers;
-};
+typedef struct IncompleteJump {
+	Token* jmpTok;
+	Token* labelTok;
+	uint lineIdx;
+	uint codeAddr;
+} IncompleteJump;
 
 static const LangLabel langLabels[] = {
 	{"NOP", OP_NOP, TOK_INST_NO_ARGS, INST_WHOLE},
@@ -128,6 +128,9 @@ static const LangLabel langLabels[] = {
 };
 
 static const uint langLabelsCount = sizeof(langLabels) / sizeof(LangLabel);
+
+static HashMap codeLabels;
+static Array incompleteJumps;
 
 void getLangLabel(Token* tok, uint tokStartIdx, uint* actualIdx) {
 	bool foundLangLabel = false;
@@ -577,16 +580,25 @@ void writeTokenLine(TokenLine* tokLine) {
 ushort labelAsCodeValue(Token** tok, uint* tokIdx, TokenLine* line) {
 	// WIP
 	if (hm_Contains(&codeLabels, (*tok)->value)) return *(ushort*)hm_Get(&codeLabels, (*tok)->value);
-	printf("Forward label declaration isn't supported yet !!\n");
+	// printf("Forward label declaration isn't supported yet !!\n");
+
+	IncompleteJump jmpInfos;
+
+	jmpInfos.jmpTok = (*tok)--;
+	jmpInfos.labelTok = *tok;
+	jmpInfos.lineIdx;
+	jmpInfos.codeAddr;
+
 	return 0xFFFF;
 }
 
 void assembleTokens(const string path) {
 	// WIP
 	Array tokens = tokenise(path);
+	codeLabels = hm_Create(sizeof(ushort), false);
+	incompleteJumps = arr_Create(sizeof(IncompleteJump), 128, false, false);
 
 	codePtr = 0;
-
 	for (uint i = 0, lineIdx = 0; i < tokens.elementCount; i++, lineIdx++) {
 		Token* actualToken = arr_Get(&tokens, i++);
 		Token* nextToken = arr_Get(&tokens, i);
@@ -609,7 +621,7 @@ void assembleTokens(const string path) {
 
 				if (hm_Contains(&codeLabels, actualToken->value)) {
 					printToken(actualToken);
-					printf(" was previoulsy as %d\n", *((ushort*)hm_Get(&codeLabels, actualToken->value)));
+					printf(" was previously as %d\n", *((ushort*)hm_Get(&codeLabels, actualToken->value)));
 					break;
 				}
 				i++;
@@ -712,7 +724,7 @@ void assembleTokens(const string path) {
 		if (!badTokens) continue;
 
 		if (tokLine.opCode == OP_BADOP) {
-			printf("broke out for some reason :/ at : line %d:%d\n", lineIdx, i);
+			printf("broke out for some reason at : line %d:%d\n", lineIdx, i);
 			break;
 		}
 

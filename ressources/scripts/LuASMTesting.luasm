@@ -8,6 +8,4 @@ fibo:
   str y, x
   str x, z
   jmpcc fibo
-
-main:
   
